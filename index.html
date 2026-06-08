@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Islamic Quiz App</title>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --green: #1a6b3c;
+    --green-light: #2d9e5f;
+    --gold: #c8a84b;
+    --gold-light: #e8c86a;
+    --cream: #fdf8ee;
+    --dark: #0d2818;
+    --text: #1a2e1a;
+    --white: #ffffff;
+    --correct: #2ecc71;
+    --wrong: #e74c3c;
+    --shadow: 0 8px 32px rgba(26,107,60,0.15);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Poppins', sans-serif;
+    background: var(--dark);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background-image:
+      radial-gradient(ellipse at 20% 20%, rgba(200,168,75,0.08) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 80%, rgba(45,158,95,0.1) 0%, transparent 50%);
+  }
+
+  .container {
+    width: 100%;
+    max-width: 620px;
+  }
+
+  /* ── SCREENS ── */
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* ── WELCOME ── */
+  .welcome-card {
+    background: linear-gradient(145deg, #0f3320, #1a5c35);
+    border: 1px solid rgba(200,168,75,0.3);
+    border-radius: 24px;
+    padding: 48px 40px;
+    text-align: center;
+    box-shadow: var(--shadow), inset 0 1px 0 rgba(200,168,75,0.2);
+    animation: fadeUp 0.6s ease;
+  }
+
+  .bismillah {
+    font-family: 'Amiri', serif;
+    font-size: 2rem;
+    color: var(--gold);
+    margin-bottom: 8px;
+    letter-spacing: 2px;
+  }
+
+  .subtitle-ar {
+    font-family: 'Amiri', serif;
+    color: rgba(200,168,75,0.6);
+    font-size: 0.9rem;
+    margin-bottom: 32px;
+  }
+
+  .app-title {
+    font-size: 2.2rem;
+    font-weight: 600;
+    color: var(--white);
+    line-height: 1.2;
+    margin-bottom: 12px;
+  }
+
+  .app-title span { color: var(--gold); }
+
+  .app-desc {
+    color: rgba(255,255,255,0.6);
+    font-size: 0.95rem;
+    margin-bottom: 36px;
+    line-height: 1.6;
+  }
+
+  .stats-row {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    margin-bottom: 36px;
+  }
+
+  .stat {
+    text-align: center;
+  }
+
+  .stat-num {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--gold);
+  }
+
+  .stat-label {
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.5);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .btn-start {
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    color: var(--dark);
+    border: none;
+    padding: 16px 48px;
+    border-radius: 50px;
+    font-size: 1rem;
+    font-weight: 600;
+    font-family: 'Poppins', sans-serif;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 20px rgba(200,168,75,0.4);
+  }
+
+  .btn-start:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px rgba(200,168,75,0.5);
+  }
+
+  /* ── QUIZ ── */
+  .quiz-card {
+    background: linear-gradient(145deg, #0f3320, #1a5c35);
+    border: 1px solid rgba(200,168,75,0.25);
+    border-radius: 24px;
+    padding: 36px 32px;
+    box-shadow: var(--shadow);
+    animation: fadeUp 0.4s ease;
+  }
+
+  .quiz-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+
+  .q-counter {
+    font-size: 0.85rem;
+    color: var(--gold);
+    font-weight: 500;
+    background: rgba(200,168,75,0.1);
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid rgba(200,168,75,0.2);
+  }
+
+  .timer-box {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+    color: rgba(255,255,255,0.7);
+  }
+
+  .timer-num {
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--white);
+    min-width: 24px;
+  }
+
+  .timer-num.urgent { color: #e74c3c; animation: pulse 0.5s infinite; }
+
+  .progress-bar {
+    height: 4px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 2px;
+    margin-bottom: 28px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--green-light), var(--gold));
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+
+  .question-text {
+    font-size: 1.15rem;
+    color: var(--white);
+    line-height: 1.6;
+    margin-bottom: 28px;
+    font-weight: 400;
+    min-height: 60px;
+  }
+
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .option-btn {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 14px;
+    padding: 14px 20px;
+    color: rgba(255,255,255,0.85);
+    font-size: 0.95rem;
+    font-family: 'Poppins', sans-serif;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.25s;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .option-btn:hover:not(:disabled) {
+    background: rgba(200,168,75,0.12);
+    border-color: rgba(200,168,75,0.4);
+    color: var(--white);
+    transform: translateX(4px);
+  }
+
+  .option-btn.correct {
+    background: rgba(46,204,113,0.15);
+    border-color: var(--correct);
+    color: var(--correct);
+  }
+
+  .option-btn.wrong {
+    background: rgba(231,76,60,0.15);
+    border-color: var(--wrong);
+    color: var(--wrong);
+  }
+
+  .option-label {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+
+  .score-live {
+    margin-top: 24px;
+    text-align: center;
+    color: rgba(255,255,255,0.4);
+    font-size: 0.8rem;
+  }
+
+  .score-live span { color: var(--gold); font-weight: 600; }
+
+  /* ── RESULT ── */
+  .result-card {
+    background: linear-gradient(145deg, #0f3320, #1a5c35);
+    border: 1px solid rgba(200,168,75,0.3);
+    border-radius: 24px;
+    padding: 48px 36px;
+    text-align: center;
+    box-shadow: var(--shadow);
+    animation: fadeUp 0.5s ease;
+  }
+
+  .result-emoji {
+    font-size: 4rem;
+    margin-bottom: 16px;
+    animation: bounce 0.6s ease;
+  }
+
+  .result-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--white);
+    margin-bottom: 8px;
+  }
+
+  .result-msg {
+    color: rgba(255,255,255,0.55);
+    font-size: 0.9rem;
+    margin-bottom: 32px;
+    line-height: 1.6;
+  }
+
+  .score-circle {
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    border: 3px solid var(--gold);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 32px;
+    background: rgba(200,168,75,0.08);
+    box-shadow: 0 0 30px rgba(200,168,75,0.2);
+  }
+
+  .score-big {
+    font-size: 2.4rem;
+    font-weight: 700;
+    color: var(--gold);
+    line-height: 1;
+  }
+
+  .score-total {
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.4);
+  }
+
+  .result-details {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-bottom: 36px;
+  }
+
+  .detail-box {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 14px 20px;
+    min-width: 80px;
+  }
+
+  .detail-num {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--white);
+  }
+
+  .detail-num.green { color: var(--correct); }
+  .detail-num.red { color: var(--wrong); }
+
+  .detail-label {
+    font-size: 0.72rem;
+    color: rgba(255,255,255,0.4);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .btn-row {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn-retry {
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    color: var(--dark);
+    border: none;
+    padding: 14px 32px;
+    border-radius: 50px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    font-family: 'Poppins', sans-serif;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 16px rgba(200,168,75,0.35);
+  }
+
+  .btn-retry:hover { transform: translateY(-2px); }
+
+  .btn-share {
+    background: transparent;
+    color: var(--gold);
+    border: 1px solid rgba(200,168,75,0.4);
+    padding: 14px 32px;
+    border-radius: 50px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    font-family: 'Poppins', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-share:hover {
+    background: rgba(200,168,75,0.1);
+  }
+
+  .dua-box {
+    margin-top: 28px;
+    background: rgba(200,168,75,0.06);
+    border: 1px solid rgba(200,168,75,0.15);
+    border-radius: 12px;
+    padding: 16px 20px;
+  }
+
+  .dua-text {
+    font-family: 'Amiri', serif;
+    font-size: 1.1rem;
+    color: var(--gold);
+    margin-bottom: 4px;
+  }
+
+  .dua-trans {
+    font-size: 0.78rem;
+    color: rgba(255,255,255,0.4);
+    font-style: italic;
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  @keyframes bounce {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+  }
+
+  /* ── MOBILE ── */
+  @media (max-width: 480px) {
+    .welcome-card, .quiz-card, .result-card { padding: 28px 20px; }
+    .app-title { font-size: 1.7rem; }
+    .bismillah { font-size: 1.6rem; }
+    .stats-row { gap: 20px; }
+    .question-text { font-size: 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- WELCOME SCREEN -->
+  <div class="screen active" id="welcomeScreen">
+    <div class="welcome-card">
+      <div class="bismillah">بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ</div>
+      <div class="subtitle-ar">In the name of Allah, the Most Gracious, the Most Merciful</div>
+      <h1 class="app-title">Islamic <span>Quiz</span></h1>
+      <p class="app-desc">Test your knowledge of Islam — Quran, Hadith, History, and more.</p>
+      <div class="stats-row">
+        <div class="stat">
+          <div class="stat-num">20</div>
+          <div class="stat-label">Questions</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num">15s</div>
+          <div class="stat-label">Per Q</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num">4</div>
+          <div class="stat-label">Options</div>
+        </div>
+      </div>
+      <button class="btn-start" onclick="startQuiz()">Start Quiz ✦</button>
+    </div>
+  </div>
+
+  <!-- QUIZ SCREEN -->
+  <div class="screen" id="quizScreen">
+    <div class="quiz-card">
+      <div class="quiz-header">
+        <div class="q-counter" id="qCounter">Question 1 / 20</div>
+        <div class="timer-box">⏱ <span class="timer-num" id="timerNum">15</span>s</div>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill" style="width:5%"></div>
+      </div>
+      <div class="question-text" id="questionText"></div>
+      <div class="options" id="optionsContainer"></div>
+      <div class="score-live">Score: <span id="liveScore">0</span></div>
+    </div>
+  </div>
+
+  <!-- RESULT SCREEN -->
+  <div class="screen" id="resultScreen">
+    <div class="result-card">
+      <div class="result-emoji" id="resultEmoji">🌟</div>
+      <h2 class="result-title" id="resultTitle">MashAllah!</h2>
+      <p class="result-msg" id="resultMsg">Keep learning about Islam.</p>
+      <div class="score-circle">
+        <div class="score-big" id="scoreBig">0</div>
+        <div class="score-total" id="scoreTotal">out of 20</div>
+      </div>
+      <div class="result-details">
+        <div class="detail-box">
+          <div class="detail-num green" id="correctCount">0</div>
+          <div class="detail-label">Correct</div>
+        </div>
+        <div class="detail-box">
+          <div class="detail-num red" id="wrongCount">0</div>
+          <div class="detail-label">Wrong</div>
+        </div>
+        <div class="detail-box">
+          <div class="detail-num" id="percentNum">0%</div>
+          <div class="detail-label">Score</div>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn-retry" onclick="restartQuiz()">Try Again</button>
+        <button class="btn-share" onclick="shareResult()">Share 🔗</button>
+      </div>
+      <div class="dua-box">
+        <div class="dua-text">رَبِّ زِدْنِي عِلْمًا</div>
+        <div class="dua-trans">"My Lord, increase me in knowledge." — Quran 20:114</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const questions = [
+  { q: "How many Surahs are in the Holy Quran?", options: ["112","114","116","110"], answer: 1 },
+  { q: "What is the first Surah of the Quran?", options: ["Al-Baqarah","Al-Ikhlas","Al-Fatiha","Al-Nas"], answer: 2 },
+  { q: "How many times is Salah (prayer) obligatory per day?", options: ["3","4","5","6"], answer: 2 },
+  { q: "In which month was the Quran revealed?", options: ["Rajab","Ramadan","Shaban","Muharram"], answer: 1 },
+  { q: "What is the name of the last Prophet of Islam?", options: ["Isa (AS)","Ibrahim (AS)","Musa (AS)","Muhammad (SAW)"], answer: 3 },
+  { q: "How many Ayahs (verses) are in Surah Al-Fatiha?", options: ["5","6","7","8"], answer: 2 },
+  { q: "Which angel is responsible for delivering revelation?", options: ["Israfeel","Mikail","Jibreel","Izraeel"], answer: 2 },
+  { q: "What is the direction Muslims face during prayer?", options: ["Jerusalem","Madinah","Makkah (Qibla)","Cairo"], answer: 2 },
+  { q: "What is the name of the holy book of Islam?", options: ["Torah","Zabur","Injeel","Quran"], answer: 3 },
+  { q: "How many pillars of Islam are there?", options: ["4","5","6","7"], answer: 1 },
+  { q: "Who built the Kaaba?", options: ["Prophet Muhammad (SAW)","Prophet Musa (AS)","Prophet Ibrahim (AS) and Ismail (AS)","Prophet Nuh (AS)"], answer: 2 },
+  { q: "What does 'Islam' mean?", options: ["Peace","Submission to Allah","Faith","Obedience"], answer: 1 },
+  { q: "Which Surah is called the 'Heart of the Quran'?", options: ["Al-Mulk","Ya-Sin","Al-Kahf","Al-Rahman"], answer: 1 },
+  { q: "What is the first month of the Islamic calendar?", options: ["Rajab","Dhul Hijjah","Muharram","Safar"], answer: 2 },
+  { q: "How many Rakats are in Fajr prayer?", options: ["2","3","4","5"], answer: 0 },
+  { q: "What is Zakat?", options: ["Fasting","Obligatory charity","Night prayer","Pilgrimage"], answer: 1 },
+  { q: "Which prophet is known as 'Khalilullah' (Friend of Allah)?", options: ["Prophet Musa (AS)","Prophet Isa (AS)","Prophet Ibrahim (AS)","Prophet Yusuf (AS)"], answer: 2 },
+  { q: "What city is the Prophet Muhammad (SAW) buried in?", options: ["Makkah","Jerusalem","Madinah","Taif"], answer: 2 },
+  { q: "How many days of fasting are obligatory in Ramadan?", options: ["27","28","29 or 30","31"], answer: 2 },
+  { q: "What is the meaning of 'Hadith'?", options: ["A chapter of Quran","Sayings and actions of the Prophet (SAW)","Islamic law","A form of worship"], answer: 1 },
+];
+
+let current = 0, score = 0, timer, timeLeft;
+const TIMER_DURATION = 15;
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function startQuiz() {
+  current = 0; score = 0;
+  shuffleArray(questions);
+  showScreen('quizScreen');
+  loadQuestion();
+}
+
+function loadQuestion() {
+  clearInterval(timer);
+  timeLeft = TIMER_DURATION;
+
+  const q = questions[current];
+  document.getElementById('qCounter').textContent = `Question ${current+1} / ${questions.length}`;
+  document.getElementById('progressFill').style.width = `${((current+1)/questions.length)*100}%`;
+  document.getElementById('questionText').textContent = q.q;
+  document.getElementById('liveScore').textContent = score;
+
+  const labels = ['A','B','C','D'];
+  const container = document.getElementById('optionsContainer');
+  container.innerHTML = '';
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.innerHTML = `<span class="option-label">${labels[i]}</span> ${opt}`;
+    btn.onclick = () => selectAnswer(i);
+    container.appendChild(btn);
+  });
+
+  startTimer();
+}
+
+function startTimer() {
+  updateTimerDisplay();
+  timer = setInterval(() => {
+    timeLeft--;
+    updateTimerDisplay();
+    if (timeLeft <= 0) {
+      clearInterval(timer);
+      autoNext();
+    }
+  }, 1000);
+}
+
+function updateTimerDisplay() {
+  const el = document.getElementById('timerNum');
+  el.textContent = timeLeft;
+  el.className = 'timer-num' + (timeLeft <= 5 ? ' urgent' : '');
+}
+
+function selectAnswer(index) {
+  clearInterval(timer);
+  const q = questions[current];
+  const btns = document.querySelectorAll('.option-btn');
+  btns.forEach(b => b.disabled = true);
+
+  if (index === q.answer) {
+    btns[index].classList.add('correct');
+    score++;
+  } else {
+    btns[index].classList.add('wrong');
+    btns[q.answer].classList.add('correct');
+  }
+
+  setTimeout(nextQuestion, 1000);
+}
+
+function autoNext() {
+  const q = questions[current];
+  const btns = document.querySelectorAll('.option-btn');
+  btns.forEach(b => b.disabled = true);
+  btns[q.answer].classList.add('correct');
+  setTimeout(nextQuestion, 800);
+}
+
+function nextQuestion() {
+  current++;
+  if (current < questions.length) loadQuestion();
+  else showResult();
+}
+
+function showResult() {
+  showScreen('resultScreen');
+  const total = questions.length;
+  const pct = Math.round((score/total)*100);
+  const wrong = total - score;
+
+  document.getElementById('scoreBig').textContent = score;
+  document.getElementById('scoreTotal').textContent = `out of ${total}`;
+  document.getElementById('correctCount').textContent = score;
+  document.getElementById('wrongCount').textContent = wrong;
+  document.getElementById('percentNum').textContent = pct + '%';
+
+  let emoji, title, msg;
+  if (pct >= 90) { emoji='🏆'; title='MashAllah! Excellent!'; msg='Your Islamic knowledge is outstanding. May Allah increase your knowledge and bless you.'; }
+  else if (pct >= 70) { emoji='⭐'; title='Great Job!'; msg='Very good knowledge of Islam! Keep reading and learning more, InshaAllah.'; }
+  else if (pct >= 50) { emoji='📖'; title='Good Effort!'; msg='You have a good base. Keep studying the Quran and Hadith to improve.'; }
+  else { emoji='🌱'; title='Keep Learning!'; msg='Every journey begins with a single step. Keep learning about Islam — Allah loves those who seek knowledge.'; }
+
+  document.getElementById('resultEmoji').textContent = emoji;
+  document.getElementById('resultTitle').textContent = title;
+  document.getElementById('resultMsg').textContent = msg;
+}
+
+function restartQuiz() { startQuiz(); }
+
+function shareResult() {
+  const total = questions.length;
+  const pct = Math.round((score/total)*100);
+  const text = `🕌 Islamic Quiz Result\n\nI scored ${score}/${total} (${pct}%) on the Islamic Quiz!\n\nTest your knowledge too 👇\n${window.location.href}`;
+  if (navigator.share) {
+    navigator.share({ title: 'Islamic Quiz', text });
+  } else {
+    navigator.clipboard.writeText(text).then(() => alert('Result copied! Paste it anywhere to share 📋'));
+  }
+}
+
+function shuffleArray(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i+1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+}
+</script>
+</body>
+</html>
